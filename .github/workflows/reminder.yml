@@ -1,17 +1,11 @@
-name: Telegram Reminder
-
-on:
-  schedule:
-    - cron: '0 3,8,14 * * *'
-  workflow_dispatch:
-
 jobs:
   remind:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send Telegram Reminder
+      - name: Send Telegram Message
         run: |
-          curl -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
+          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.CHAT_ID }}" \
-            -d text="🔔 পোস্ট করার সময় হয়েছে! ChatGPT খুলে আজকের ভাইরাল নিউজ নিন।"
+            -d text="🔔 GitHub Actions সফলভাবে কাজ করছে!")
+          echo "$RESPONSE"
