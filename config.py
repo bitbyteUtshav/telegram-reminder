@@ -8,7 +8,6 @@ GitHub Actions এ এগুলো Repository Secrets থেকে আসবে�
 
 import os
 
-# লোকাল ডেভেলপমেন্টে .env থাকলে লোড করবে; GitHub Actions এ এটা কোনো ক্ষতি করবে না
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -29,7 +28,7 @@ def _get_env(name: str, required: bool = True, default: str = None) -> str:
 
 # ---- Telegram ----
 TELEGRAM_BOT_TOKEN = _get_env("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = _get_env("TELEGRAM_CHAT_ID")  # চ্যানেল/গ্রুপ/ইউজার আইডি, যেমন: -1001234567890
+TELEGRAM_CHAT_ID = _get_env("TELEGRAM_CHAT_ID")
 
 # ---- Gemini ----
 GEMINI_API_KEY = _get_env("GEMINI_API_KEY")
@@ -40,8 +39,6 @@ ANTHROPIC_API_KEY = _get_env("ANTHROPIC_API_KEY")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 
 # ---- AI Provider ----
-# শিডিউলড মোডে (main.py, GitHub Actions) কোনো লাইভ ইউজার না থাকায় ডিফল্ট প্রোভাইডার ব্যবহৃত হয়।
-# পোলিং মোডে (bot.py) প্রতিবার ইউজার Telegram বাটনে বেছে নিতে পারবেন।
 DEFAULT_AI_PROVIDER = os.getenv("DEFAULT_AI_PROVIDER", "gemini")  # "gemini" অথবা "claude"
 
 # ---- RSS ফিড সোর্স (ক্যাটাগরি অনুযায়ী) ----
@@ -52,17 +49,16 @@ RSS_FEEDS = {
     ],
     "defense": [
         "https://www.defensenews.com/arc/outboundfeeds/rss/",
-        "https://www.janes.com/feeds/news",
+        "https://defence-blog.com/feed",
     ],
     "ai": [
         "https://www.artificialintelligence-news.com/feed/",
         "https://techcrunch.com/category/artificial-intelligence/feed/",
     ],
     "space": [
-        "https://www.nasa.gov/news-release/feed/",
         "https://spacenews.com/feed/",
+        "https://www.space.com/feeds.xml",
     ],
 }
 
-# প্রতি ক্যাটাগরি থেকে সর্বোচ্চ কতগুলো নিউজ আইটেম প্রসেস করা হবে
 MAX_ITEMS_PER_CATEGORY = int(os.getenv("MAX_ITEMS_PER_CATEGORY", "3"))
