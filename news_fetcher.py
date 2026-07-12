@@ -8,11 +8,14 @@ import feedparser
 import hashlib
 import json
 import os
+import requests
 from datetime import datetime, timezone
 
 import config
 
 SEEN_FILE = "seen_items.json"  # আগে পোস্ট করা আইটেমের হ্যাশ রাখা হয় (ডুপ্লিকেট এড়াতে)
+FEED_TIMEOUT_SECONDS = 15  # কোনো ফিড সার্ভার সাড়া না দিলে এতক্ষণ পর ছেড়ে দেওয়া হবে
+HTTP_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; AI-News-Bot/1.0)"}
 
 
 def _load_seen() -> set:
@@ -37,6 +40,25 @@ def _hash_entry(entry) -> str:
     return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
 
+def _fetch_feed(feed_url: str):
+    """
+    RSS ফিড HTTP দিয়ে (টাইমআউটসহ) আনে, তারপর feedparser দিয়ে পার্স করে।
+    feedparser.parse(url) সরাসরি ব্যবহার করলে টাইমআউট সেট করার উপায় নেই —
+    কোনো সার্ভার সাড়া না দিলে পুরো স্ক্রিপ্ট চিরকাল আটকে থাকতে পারে।
+    তাই আগে requests দিয়ে (টাইমআউটসহ) ডাউনলোড করে, তারপর পার্স করা হয়।
+    """
+    try:
+        response = requests.get(feed_url, headers=HTTP_HEADERS, timeout=FEED_TIMEOUT_SECONDS)
+        response.raise_for_status()
+        return feedparser.parse(response.content)
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ ফিড লোড করতে ব্যর্থ (timeout/network): {feed_url} — {e}")
+        return None
+    except Exception as e:
+        print(f"⚠️ ফিড পার্স করতে ব্যর্থ: {feed_url} — {e}")
+        return None
+
+
 def fetch_category(category: str, limit: int = None) -> list[dict]:
     """
     নির্দিষ্ট ক্যাটাগরির (news/defense/ai/space) সব RSS ফিড থেকে নতুন
@@ -50,10 +72,8 @@ def fetch_category(category: str, limit: int = None) -> list[dict]:
     results = []
 
     for feed_url in config.RSS_FEEDS[category]:
-        try:
-            parsed = feedparser.parse(feed_url)
-        except Exception as e:
-            print(f"⚠️ ফিড লোড করতে ব্যর্থ: {feed_url} — {e}")
+        parsed = _fetch_feed(feed_url)
+        if parsed is None:
             continue
 
         for entry in parsed.entries:
