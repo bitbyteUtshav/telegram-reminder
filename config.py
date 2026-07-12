@@ -36,10 +36,12 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 # ---- Claude (Anthropic) ----
 ANTHROPIC_API_KEY = _get_env("ANTHROPIC_API_KEY")
-ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "").strip() or "claude-sonnet-5"
+# ঐচ্ছিক: থার্ড-পার্টি Anthropic-compatible গেটওয়ে (যেমন ZenMux) ব্যবহার করলে এখানে base URL দিন।
+ANTHROPIC_BASE_URL = os.getenv("ANTHROPIC_BASE_URL", "").strip() or None
 
 # ---- AI Provider ----
-DEFAULT_AI_PROVIDER = os.getenv("DEFAULT_AI_PROVIDER", "gemini")  # "gemini" অথবা "claude"
+DEFAULT_AI_PROVIDER = os.getenv("DEFAULT_AI_PROVIDER", "gemini")
 
 # ---- RSS ফিড সোর্স (ক্যাটাগরি অনুযায়ী) ----
 RSS_FEEDS = {
